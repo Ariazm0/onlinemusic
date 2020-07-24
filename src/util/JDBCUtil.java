@@ -35,9 +35,10 @@ public class JDBCUtil {
         return dataSource;
     }
 
-    public static void getConnection() {
+    public static Connection getConnection() {
         try {
             Connection connection = getDataSource().getConnection();
+            return connection;
 
         } catch (SQLException e) {
             e.printStackTrace();
