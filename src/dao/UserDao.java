@@ -48,4 +48,31 @@ public class UserDao {
         }
         return user;
     }
+    //注册
+    public void register (User user) {
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement statement = null;
+        try {
+            String sql = "insert into user values (null,?,?,?,?,?) ";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1,user.getUserName());
+            statement.setString(2,user.getPassword());
+            statement.setInt(3,user.getAge());
+            statement.setString(4,user.getGender());
+            statement.setString(5,user.getEmail());
+            int ret = statement.executeUpdate();
+            if (ret != 1) {
+                System.out.println("注册失败");
+                return;
+            }
+            System.out.println("注册成功");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.close(connection,statement,null);
+        }
+
+    }
 }
