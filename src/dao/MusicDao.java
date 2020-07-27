@@ -30,10 +30,11 @@ public class MusicDao {
             rs = statement.executeQuery();
             while (rs.next()) {
                 Music music = new Music();
-                music.setMusicId(rs.getInt("musicId"));
+                music.setMusicId(rs.getInt("id"));
                 music.setTitle(rs.getString("title"));
                 music.setSinger(rs.getString("singer"));
                 music.setTime(rs.getString("time"));
+                music.setUrl(rs.getString("url"));
                 music.setUserId(rs.getInt("userId"));
                 list.add(music);
             }
@@ -45,4 +46,269 @@ public class MusicDao {
             JDBCUtil.close(connection,statement,rs);
         }
     }
+    //根据id查找音乐
+    public Music fingMusicById(int id) {
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        Music music = null;
+        try {
+            String sql = "select * form music where musicId = ?";
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1,id);
+            rs = statement.executeQuery();
+            if (rs.next()) {
+                music = new Music();
+                music.setMusicId(rs.getInt("id"));
+                music.setTitle(rs.getString("title"));
+                music.setSinger(rs.getString("singer"));
+                music.setTime(rs.getString("time"));
+                music.setUrl(rs.getString("url"));
+                music.setUserId(rs.getInt("userId"));
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.close(connection,statement,rs);
+        }
+        return music;
+    }
+
+    /**     * 根据关键字查询歌单     */
+    public List<Music> ifMusic(String str){
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        List<Music> list = new ArrayList<>();
+        try {
+            String sql = "select*from music where title like '%"+str+"%'";
+            statement = connection.prepareStatement(sql);
+            rs = statement.executeQuery();
+            while (rs.next()) {
+                Music music = new Music();
+                music.setMusicId(rs.getInt("id"));
+                music.setTitle(rs.getString("title"));
+                music.setSinger(rs.getString("singer"));
+                music.setTime(rs.getString("time"));
+                music.setUrl(rs.getString("url"));
+                music.setUserId(rs.getInt("userId"));
+                list.add(music);
+            }
+        }catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.close(connection,statement,rs);
+        }
+        return list;
+
+    }
+    //上传音乐
+    public int Insert(Music music) {
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try{
+            String sql = "insert into from music(musicId,title,singer,url,time) values(?,?,?,?,?)";
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1,music.getMusicId());
+            statement.setString(2,music.getTitle());
+            statement.setString(3,music.getSinger());
+            statement.setString(4,music.getTime());
+            statement.setString(5,music.getUrl());
+            int ret = statement.executeUpdate();
+            if (ret != 1) {
+                System.out.println("插入失败");
+                return 0;
+            }
+            return ret;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.close(connection,statement,rs);
+        }
+    }
+    //删除歌曲
+    public int deleteMusicById(int id) {
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            String sql = "delete from music where musicId = ?";
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1,id);
+            int ret = statement.executeUpdate();
+            if(ret == 1) {
+                //同时删除中间表中的数据
+                // 1、看中间表是否有数据，如果有删除
+                 if(findLoveMusicOnDel(id)) {
+                    int ret2 = removeLoveMusicOnDelete(id);
+                    if(ret2 == 1){
+                        return 1;
+                    }
+                 } else {                //如果没有找到，说明这首歌，没有被添加到喜欢的列表
+                     return 1;
+                 }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
+    public boolean findLoveMusicOnDel(int id) {
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            String sql = "select from lovemusic where musicId = ? ";
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1,id);
+            rs = statement.executeQuery();
+            if (rs.next()) {
+                return true;
+            }
+            return false;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.close(connection,statement,rs);
+        }
+    }
+    public int removeLoveMusicOnDelete(int id) {
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            String sql = "delete from lovemusic where musicId = ? ";
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1,id);
+            int ret = statement.executeUpdate();
+            if (ret != 1) {
+                return 0;
+            }
+            return ret;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.close(connection,statement,rs);
+        }
+    }
+    //移除当前用户喜欢的这首音乐，因为同一首音乐可能多个用户喜欢
+
+    public int removeLoveMusic(int userId,int musicId) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            String sql = "delete from lovemusic where user_id=? and music_id=?";
+            connection = JDBCUtil.getConnection();
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1,userId);
+            preparedStatement.setInt(2,musicId);
+            int ret = preparedStatement.executeUpdate();
+            if(ret == 1) {
+                return ret;
+            }
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            JDBCUtil.close(connection,preparedStatement,null);
+        }
+        return 0;
+    }
+
+
+    // 添加喜欢的音乐的时候，需要先判断该音乐是否存在
+
+    public boolean findMusicByMusicId(int user_id,int musicID) {
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = JDBCUtil.getConnection();
+            ps = conn.prepareStatement("select * from lovemusic where music_id=? and user_id=?");
+            ps.setInt(1,musicID);
+            ps.setInt(2,user_id);
+            rs = ps.executeQuery();
+            if(rs.next()) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }finally {
+            JDBCUtil.close(conn, ps, rs);
+        }
+        return false;
+    }
+    //查询用户喜欢的全部歌单
+
+    public List<Music> findLoveMusic(int user_id){
+        List<Music> musics = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = JDBCUtil.getConnection();
+            ps = conn.prepareStatement("select m.id as music_id,title,singer,time,url,userid from lovemusic lm,music m where lm.music_id=m.id and user_id=?");
+            ps.setInt(1,user_id);
+            rs = ps.executeQuery();
+            while(rs.next()) {
+                Music music = new Music();
+                music.setMusicId(rs.getInt("music_id"));
+                music.setTitle(rs.getString("title"));
+                music.setSinger(rs.getString("singer"));
+                music.setTime(rs.getString("time"));
+                music.setUrl(rs.getString("url"));
+                music.setUserId(rs.getInt("userid"));
+                musics.add(music);
+            }
+        } catch (Exception e) {
+        e.printStackTrace();
+        throw new RuntimeException(e);
+        }finally {
+            JDBCUtil.close(conn, ps, rs);
+        }
+        return musics;
+    }
+    //根据关键字查询喜欢的歌单
+    public List<Music> ifMusicLove(String str,int user_id){
+        List<Music> musics = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = JDBCUtil.getConnection();
+            //ps = conn.prepareStatement("select*from music where title like '%"+str+"%'");
+            ps = conn.prepareStatement("select m.id as music_id,title,singer,time,url,userid from lovemusic lm,music m where lm.music_id=m.id and user_id=? and  title like '%"+str+"%'");
+            ps.setInt(1,user_id);
+            rs = ps.executeQuery();
+            while(rs.next()) {
+                Music music = new Music();
+                music.setMusicId(rs.getInt("music_id"));
+                music.setTitle(rs.getString("title"));
+                music.setSinger(rs.getString("singer"));
+                music.setTime(rs.getString("time"));
+                music.setUrl(rs.getString("url"));
+                music.setUserId(rs.getInt("userid"));
+                musics.add(music);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.close(conn, ps, rs);
+        }
+        return musics;
+    }
+
 }
