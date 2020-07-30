@@ -24,15 +24,15 @@ public class UserDao {
         User user = null;
         try {
             connection = JDBCUtil.getConnection();
-            String sql = "select * from user where userName = ? and password = ?";
+            String sql = "select * from user where username = ? and password = ?";
             statement = connection.prepareStatement(sql);
             statement.setString(1,loginUser.getUserName());
             statement.setString(2,loginUser.getPassword());
             set = statement.executeQuery();
             if (set.next()) {
                 user = new User();
-                user.setUserId(set.getInt("userId"));
-                user.setUserName(set.getString("userName"));
+                user.setUserId(set.getInt("id"));
+                user.setUserName(set.getString("username"));
                 user.setPassword(set.getString("password"));
                 user.setAge(set.getInt("age"));
                 user.setGender(set.getString("gender"));
@@ -75,4 +75,13 @@ public class UserDao {
         }
 
     }
+
+    /*public static void main(String[] args) {
+        UserDao dao = new UserDao();
+        User user = new User();
+        user.setUserName("bit");
+        user.setPassword("123");
+        User s = dao.login(user);
+        System.out.println(s);
+    }*/
 }

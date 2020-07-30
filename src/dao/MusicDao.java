@@ -2,7 +2,7 @@ package dao;
 
 import entity.Music;
 import util.JDBCUtil;
-
+import java.sql.Date;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,7 +25,7 @@ public class MusicDao {
         PreparedStatement statement = null;
         ResultSet rs = null;
         try {
-            String sql = "";
+            String sql = "select *from music";
             statement = connection.prepareStatement(sql);
             rs = statement.executeQuery();
             while (rs.next()) {
@@ -33,7 +33,7 @@ public class MusicDao {
                 music.setMusicId(rs.getInt("id"));
                 music.setTitle(rs.getString("title"));
                 music.setSinger(rs.getString("singer"));
-                music.setTime(rs.getString("time"));
+                music.setTime(rs.getDate("time"));
                 music.setUrl(rs.getString("url"));
                 music.setUserId(rs.getInt("userId"));
                 list.add(music);
@@ -53,7 +53,7 @@ public class MusicDao {
         ResultSet rs = null;
         Music music = null;
         try {
-            String sql = "select * form music where musicId = ?";
+            String sql = "select * form music where id = ?";
             statement = connection.prepareStatement(sql);
             statement.setInt(1,id);
             rs = statement.executeQuery();
@@ -62,7 +62,7 @@ public class MusicDao {
                 music.setMusicId(rs.getInt("id"));
                 music.setTitle(rs.getString("title"));
                 music.setSinger(rs.getString("singer"));
-                music.setTime(rs.getString("time"));
+                music.setTime(rs.getDate("time"));
                 music.setUrl(rs.getString("url"));
                 music.setUserId(rs.getInt("userId"));
 
@@ -91,7 +91,7 @@ public class MusicDao {
                 music.setMusicId(rs.getInt("id"));
                 music.setTitle(rs.getString("title"));
                 music.setSinger(rs.getString("singer"));
-                music.setTime(rs.getString("time"));
+                music.setTime(rs.getDate("time"));
                 music.setUrl(rs.getString("url"));
                 music.setUserId(rs.getInt("userId"));
                 list.add(music);
@@ -111,12 +111,12 @@ public class MusicDao {
         PreparedStatement statement = null;
         ResultSet rs = null;
         try{
-            String sql = "insert into from music(musicId,title,singer,url,time) values(?,?,?,?,?)";
+            String sql = "insert into from music(id,title,singer,url,time) values(?,?,?,?,?)";
             statement = connection.prepareStatement(sql);
             statement.setInt(1,music.getMusicId());
             statement.setString(2,music.getTitle());
             statement.setString(3,music.getSinger());
-            statement.setString(4,music.getTime());
+            statement.setDate(4,music.getTime());
             statement.setString(5,music.getUrl());
             int ret = statement.executeUpdate();
             if (ret != 1) {
@@ -137,7 +137,7 @@ public class MusicDao {
         PreparedStatement statement = null;
         ResultSet rs = null;
         try {
-            String sql = "delete from music where musicId = ?";
+            String sql = "delete from music where id = ?";
             statement = connection.prepareStatement(sql);
             statement.setInt(1,id);
             int ret = statement.executeUpdate();
@@ -164,7 +164,7 @@ public class MusicDao {
         PreparedStatement statement = null;
         ResultSet rs = null;
         try {
-            String sql = "select from lovemusic where musicId = ? ";
+            String sql = "select * from lovemusic where id = ? ";
             statement = connection.prepareStatement(sql);
             statement.setInt(1,id);
             rs = statement.executeQuery();
@@ -185,7 +185,7 @@ public class MusicDao {
         PreparedStatement statement = null;
         ResultSet rs = null;
         try {
-            String sql = "delete from lovemusic where musicId = ? ";
+            String sql = "delete from lovemusic where id = ? ";
             statement = connection.prepareStatement(sql);
             statement.setInt(1,id);
             int ret = statement.executeUpdate();
@@ -267,7 +267,7 @@ public class MusicDao {
                 music.setMusicId(rs.getInt("music_id"));
                 music.setTitle(rs.getString("title"));
                 music.setSinger(rs.getString("singer"));
-                music.setTime(rs.getString("time"));
+                music.setTime(rs.getDate("time"));
                 music.setUrl(rs.getString("url"));
                 music.setUserId(rs.getInt("userid"));
                 musics.add(music);
@@ -297,7 +297,7 @@ public class MusicDao {
                 music.setMusicId(rs.getInt("music_id"));
                 music.setTitle(rs.getString("title"));
                 music.setSinger(rs.getString("singer"));
-                music.setTime(rs.getString("time"));
+                music.setTime(rs.getDate("time"));
                 music.setUrl(rs.getString("url"));
                 music.setUserId(rs.getInt("userid"));
                 musics.add(music);

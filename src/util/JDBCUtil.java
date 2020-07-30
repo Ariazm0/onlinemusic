@@ -16,19 +16,20 @@ import java.sql.SQLException;
  * Time: 22:59
  */
 public class JDBCUtil {
-    private static String url = "jdbc:mysql://127.0.0.1:3306/onlinemusic?useSSL=false";
-    private static String userName = "root";
+    private static String url = "jdbc:mysql://127.0.0.1:3306/musicserver?characterEncoding=utf-8&useSSL=true";
+    private static String username = "root";
     private static String password = "110603";
     private static volatile DataSource dataSource = null;
 
-    private static DataSource getDataSource() {
-        if(dataSource == null) {
+    public static DataSource getDataSource() {
+        if (dataSource == null) {
             synchronized (JDBCUtil.class) {
                 if (dataSource == null) {
                     dataSource = new MysqlDataSource();
-                    ((MysqlDataSource)dataSource).setDatabaseName(userName);
+                    // 还需要给 DataSource 设置一些属性.
+                    ((MysqlDataSource)dataSource).setURL(url);
+                    ((MysqlDataSource)dataSource).setUser(username);
                     ((MysqlDataSource)dataSource).setPassword(password);
-                    ((MysqlDataSource)dataSource).setUrl(url);
                 }
             }
         }
@@ -37,8 +38,7 @@ public class JDBCUtil {
 
     public static Connection getConnection() {
         try {
-            Connection connection = getDataSource().getConnection();
-            return connection;
+            return getDataSource().getConnection();
 
         } catch (SQLException e) {
             e.printStackTrace();

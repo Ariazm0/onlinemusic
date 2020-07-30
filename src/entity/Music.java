@@ -1,5 +1,7 @@
 package entity;
 
+import java.sql.Date;
+
 /**
  * Created with IntelliJ IDEA.
  * Description:
@@ -12,7 +14,7 @@ public class Music {
     private String title;
     private String singer;
     private String url;
-    private String time;
+    private Date time;
     private int userId;
 
     public int getMusicId() {
@@ -47,11 +49,11 @@ public class Music {
         this.url = url;
     }
 
-    public String getTime() {
+    public Date getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(Date time) {
         this.time = time;
     }
 
